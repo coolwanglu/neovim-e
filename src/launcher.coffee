@@ -1,0 +1,12 @@
+app = require 'app'
+BrowserWindow = require 'browser-window'
+
+process.on 'uncaughtException', (error={}) ->
+  console.log(error.message) if error.message?
+  console.log(error.stack) if error.stack?
+
+app.on 'window-all-closed', -> app.quit()
+
+app.on 'ready', ->
+  win = new BrowserWindow width: 800, height: 600
+  win.loadUrl 'file://' + __dirname + '/nvim.html'

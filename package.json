@@ -1,0 +1,27 @@
+{
+  "name": "neovim.as",
+  "productName": "Neovim.AS",
+  "version": "0.0.1",
+  "description": "Atom Shell client for Neovim",
+  "main": "./src/launcher.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coolwanglu/neovim.as.git"
+  },
+  "bugs": {
+    "url": "https://github.com/coolwanglu/neovim.as/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/coolwanglu/neovim.as/raw/master/LICENSE.md"
+    }
+  ],
+  "dependencies": {
+    "msgpack5": "~1.4.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-coffee": "~0.12.0"
+  }
+}
