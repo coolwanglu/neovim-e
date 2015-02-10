@@ -1,6 +1,7 @@
+async = require 'async'
 child_process = require 'child_process'
 msgpack = require('msgpack5')()
-async = require 'async'
+remote = require 'remote'
 UI = require './ui'
 
 RPC =
@@ -16,10 +17,17 @@ class NVim
     @callbacks = {}
     @ui = new UI()
 
-    @nvim_process = child_process.spawn 'nvim', ['--embed'], stdio: ['pipe', 'pipe', process.stderr]
+    # Atom Shell apps are run as 'Atom <path> <args>'
+    # might need a better way to locate the arguments
+    nvim_args = ['--embed'].concat remote.process.argv[2..]
+    console.log nvim_args
+
+    @nvim_process = child_process.spawn 'nvim', nvim_args, stdio: ['pipe', 'pipe', process.stderr]
     console.log 'child process spawned: ', @nvim_process.pid
 
-    @nvim_process.on 'close', => console.log 'child process closed'
+    @nvim_process.on 'close', =>
+      console.log 'child process closed'
+      remote.require('app').quit()
 
     @decoder = msgpack.decoder header: false
     @decoder.on 'data', (data) => @on_data(data)

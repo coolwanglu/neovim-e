@@ -1,3 +1,4 @@
+shell = require 'shell'
 # visualize neovim's abstract-ui
 class UI
   constructor: ->
@@ -65,16 +66,23 @@ class UI
   # in alphabetical order
   handle_redraw: (events) ->
     for e in events
-      console.log JSON.stringify e
-      handler = @['nv_'+e[0]]
-      # optimize for put, we group the chars together
-      if handler?
-        if e[0] == 'put'
-          handler.call @, (i[0] for i in e.slice(1)).join ''
-        else
-          for args in e[1..]
-            handler.apply @, args
-      else console.log 'Redraw event not handled: ', e
+      try
+        console.log JSON.stringify e
+        handler = @['nv_'+e[0]]
+        # optimize for put, we group the chars together
+        if handler?
+          if e[0] == 'put'
+            handler.call @, (i[0] for i in e.slice(1)).join ''
+          else
+            for args in e[1..]
+              handler.apply @, args
+        else console.log 'Redraw event not handled: ', e
+      catch ex
+        console.log 'Error when processing event!'
+        console.log JSON.stringify e
+        console.log e.stack || e
+
+  nv_bell: -> shell.beep()
 
   nv_clear: -> @clear_all()
 
