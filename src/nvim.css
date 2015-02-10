@@ -1,0 +1,25 @@
+/*
+ * nvim.css
+ * Copyright (c) 2015 Lu Wang <coolwanglu@gmail.com>
+ */
+
+html,
+body,
+canvas {
+  background-color: #fff;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.nvas-invisible{
+  position:absolute;
+  right:100%;
+  bottom:100%;
+}
+
+#nvas-font-test {
+  padding:0;
+}

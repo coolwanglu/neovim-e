@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html style="background: #fff; width: 100%; height: 100%;">
+<html>
   <head>
-    <title></title>
+    <title>Neovim.as</title>
     <meta http-equiv="Content-Security-Policy" content="default-src *; script-src 'self'; style-src 'self' 'unsafe-inline';">
+    <link rel="stylesheet" href="nvim.css">
     <script src="nvim/main.js"></script>
   </head>
 
-  <body tabindex="-1" style="width: 100%; height: 100%; margin:0px; overflow:hidden;">
-      <canvas style="width: 100%; height: 100%; margin:0px; overflow:hidden;"></canvas>
+  <body>
+      <canvas id="nvas-canvas"></canvas>
+      <div id="nvas-font-test" class="nvas-invisible"></div>
   </body>
 </html>
