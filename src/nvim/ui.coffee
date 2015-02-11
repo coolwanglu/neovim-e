@@ -233,11 +233,9 @@ class UI extends EventEmitter
       clr_top = src_top
       clr_bottom = dst_top
 
-    # scroll
     img = @ctx.getImageData @scroll_left * @char_width, src_top * @char_height, (@scroll_right - @scroll_left + 1) * @char_width, (src_bottom - src_top + 1) * @char_height
     @ctx.putImageData img, @scroll_left * @char_width, dst_top * @char_height
     @clear_block @scroll_left, clr_top, @scroll_right - @scroll_left + 1, clr_bottom - clr_top + 1
-
 
   nv_set_scroll_region: (top, bottom, left, right) ->
     @scroll_top = top
