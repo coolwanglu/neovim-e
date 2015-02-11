@@ -1,7 +1,43 @@
 shell = require 'shell'
+EventEmitter = require('events').EventEmitter
+
+# keyIdentifier -> vim key name
+# TODO: check insert delete
+KEYMAP =
+  '\x08' : 'BS'
+  '\x09' : 'Tab'
+  '\x1b' : 'Escape'
+  '\x20' : 'Space'
+  '\x7f' : 'Del'
+
+get_key_id = (id) -> KEYMAP[id] ? id
+
+KEYS_TO_INTERCEPT_UPON_KEYDOWN = {}
+KEYS_TO_INTERCEPT_UPON_KEYDOWN[k] = 1 for k in [
+  'Escape'
+  'Tab'
+  'BS'
+  'Up', 'Down', 'Left', 'Right'
+  'Home', 'End'
+  'Del'
+  'PageUp', 'PageDown'
+]
+
+get_vim_key_name = (key, e) ->
+  kn = '<'
+  kn += 'S-' if e.shiftKey
+  kn += 'C-' if e.ctrlKey
+  kn += 'A-' if e.altKey
+  if e.ctrlKey and 1 <= e.charCode and e.charCode <= 26
+    key = String.fromCharCode(96 + e.charCode)
+  kn += key + '>'
+  kn
+
 # visualize neovim's abstract-ui
-class UI
+class UI extends EventEmitter
   constructor: ->
+    super()
+
     @canvas = document.getElementById('nvas-canvas')
     @ctx = @canvas.getContext('2d')
     @devicePixelRatio = window.devicePixelRatio ? 1
@@ -23,6 +59,7 @@ class UI
     @attrs = {}
 
     @init_font()
+    @init_key_handlers()
 
   init_font: ->
     @font_test_node.style.font = @font
@@ -31,6 +68,18 @@ class UI
     @char_width = Math.max 1, @font_test_node.clientWidth * @devicePixelRatio
     console.log 'char width: ', @char_width
     console.log 'char height: ', @char_height
+
+  init_key_handlers: ->
+    document.addEventListener 'keypress', (e) =>
+      key = String.fromCharCode(e.charCode)
+      e.preventDefault()
+      @emit 'key', get_vim_key_name(key, e)
+
+    document.addEventListener 'keydown', (e) =>
+      key = get_key_id e.keyIdentifier
+      if key in KEYS_TO_INTERCEPT_UPON_KEYDOWN
+        e.preventDefault()
+        @emit 'key', get_vim_key_name(key, e)
 
   get_color_string: (rgb) ->
     bgr = []
@@ -67,7 +116,6 @@ class UI
   handle_redraw: (events) ->
     for e in events
       try
-        console.log JSON.stringify e
         handler = @['nv_'+e[0]]
         # optimize for put, we group the chars together
         if handler?
