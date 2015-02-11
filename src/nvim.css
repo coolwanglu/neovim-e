@@ -12,12 +12,24 @@ canvas {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .nvas-invisible{
-  position:absolute;
-  right:100%;
-  bottom:100%;
+  position: absolute;
+  right: 100%;
+  bottom: 100%;
+}
+
+#nvas-cursor {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid;
+}
+
+.insert-mode #nvas-cursor {
+  border: 0;
+  border-left: 1px solid;
 }
 
 #nvas-font-test {

@@ -49,7 +49,6 @@ class NVim
       (_) => @ui_attach(_)
     ], =>
       @ui.on 'key', (e) =>
-        console.log 'key ' + e
         @send 'vim_input', [e]
 
   on_data: (data) ->

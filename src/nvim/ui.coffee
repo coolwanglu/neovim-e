@@ -43,29 +43,34 @@ KEYS_TO_INTERCEPT_UPON_KEYDOWN[k] = 1 for k in [
   'PageUp', 'PageDown'
 ]
 
+# TODO handle shiftKey if necessary
 get_vim_key_name = (key, e) ->
-  if not (e.ctrlKey or e.atlKey or e.shiftKey)
-    return (if e.keyCode of KEYMAP then '<' + key + '>' else key)
-  kn = '<'
-  kn += 'S-' if e.shiftKey
-  kn += 'C-' if e.ctrlKey
-  kn += 'A-' if e.altKey
-  if e.ctrlKey and 1 <= e.charCode and e.charCode <= 26
-    key = String.fromCharCode(96 + e.charCode)
-  kn += key + '>'
-  kn
+  if not (e.ctrlKey or e.atlKey)
+    if e.charCode and key.length == 1
+      if key == '<' then '<lt>'
+      else key
+    else '<' + key + '>'
+  else
+    kn = '<'
+    kn += 'C-' if e.ctrlKey
+    kn += 'A-' if e.altKey
+    if e.ctrlKey and 1 <= e.charCode and e.charCode <= 26
+      key = String.fromCharCode(96 + e.charCode)
+    kn += key + '>'
+    kn
 
 # visualize neovim's abstract-ui
 class UI extends EventEmitter
   constructor: ->
     super()
 
-    @canvas = document.getElementById('nvas-canvas')
-    @ctx = @canvas.getContext('2d')
+    @canvas = document.getElementById 'nvas-canvas'
+    @ctx = @canvas.getContext '2d'
+    @cursor = document.getElementById 'nvas-cursor'
     @devicePixelRatio = window.devicePixelRatio ? 1
 
     @font = '12px monospace'
-    @font_test_node = document.getElementById('nvas-font-test')
+    @font_test_node = document.getElementById 'nvas-font-test'
 
     @char_height = 1
     @char_width = 1
@@ -91,6 +96,9 @@ class UI extends EventEmitter
     console.log 'char width: ', @char_width
     console.log 'char height: ', @char_height
 
+    @cursor.style.width = @font_test_node.clientWidth + 'px'
+    @cursor.style.height = @font_test_node.clientHeight + 'px'
+
   init_key_handlers: ->
     document.addEventListener 'keypress', (e) =>
       key = switch e.charCode
@@ -103,7 +111,6 @@ class UI extends EventEmitter
       key = KEYMAP[e.keyCode]
       if key of KEYS_TO_INTERCEPT_UPON_KEYDOWN
         e.preventDefault()
-        console.log 'name' + get_vim_key_name(key, e)
         @emit 'key', get_vim_key_name(key, e)
 
   get_color_string: (rgb) ->
@@ -135,6 +142,11 @@ class UI extends EventEmitter
   get_cur_fg_color: -> @attrs.fg_color ? @fg_color
   get_cur_bg_color: -> @attrs.bg_color ? @bg_color
 
+  update_cursor: ->
+    @cursor.style.top = (@cursor_row * @char_height / @devicePixelRatio) + 'px'
+    @cursor.style.left = (@cursor_col * @char_width / @devicePixelRatio) + 'px'
+
+
   #####################
   # neovim redraw events
   # in alphabetical order
@@ -149,11 +161,12 @@ class UI extends EventEmitter
           else
             for args in e[1..]
               handler.apply @, args
-        else console.log 'Redraw event not handled: ', e
+        else console.log 'Redraw event not handled: ' + JSON.stringify e
       catch ex
         console.log 'Error when processing event!'
         console.log JSON.stringify e
-        console.log e.stack || e
+        console.log ex.stack || ex
+    @update_cursor()
 
   nv_bell: -> shell.beep()
 
@@ -163,12 +176,11 @@ class UI extends EventEmitter
     @cursor_row = row
     @cursor_col = col
 
-  nv_cursor_off: -> #todo
+  nv_cursor_off: -> @cursor.style.display = 'none'
 
-  nv_cursor_on: -> #todo
+  nv_cursor_on: -> @cursor.style.display = 'block'
 
-  nv_eol_clear: ->
-    @clear_block @cursor_col, @cursor_row, @total_row - @cursor_col + 1, 1
+  nv_eol_clear: -> @clear_block @cursor_col, @cursor_row, @total_col - @cursor_col + 1, 1
 
   nv_highlight_set: (attrs) ->
     @attrs = {}
@@ -176,11 +188,13 @@ class UI extends EventEmitter
     if attrs.foreground? then @attrs.fg_color = @get_color_string(attrs.foreground)
     if attrs.background? then @attrs.bg_color = @get_color_string(attrs.background)
 
+  nv_insert_mode: -> document.body.className = 'insert-mode'
+
   nv_mouse_off: -> #todo
 
   nv_mouse_on: -> #todo
 
-  nv_normal_mode: -> #todo
+  nv_normal_mode: -> document.body.className = 'normal-mode'
 
   nv_put: (str) ->
     return if str.length == 0
@@ -201,12 +215,38 @@ class UI extends EventEmitter
     @total_row = row
     w = @canvas.width = @char_width * col
     h = @canvas.height = @char_height * row
-    window.resizeTo w / @devicePixelRatio, h / @devicePixelRatio
+    window.resizeTo w / @devicePixelRatio + window.outerWidth - window.innerWidth, h / @devicePixelRatio + window.outerHeight - window.innerHeight
 
-  nv_set_scroll_region: (top, bottom, left, right) -> #todo
+  # from neovim/python-client
+  nv_scroll: (row_count) ->
+    src_top = dst_top = @scroll_top
+    src_bottom = dst_bottom = @scroll_bottom
 
-  nv_update_fg: (rgb) -> @fg_color = @get_color_string(rgb)
+    if row_count > 0 # move up
+      src_top += row_count
+      dst_bottom -= row_count
+      clr_top = dst_bottom
+      clr_bottom = src_bottom
+    else
+      src_bottom += row_count
+      dst_top -= row_count
+      clr_top = src_top
+      clr_bottom = dst_top
 
-  nv_update_bg: (rgb) -> @canvas.style.backgroundColor = @bg_color = @get_color_string(rgb)
+    # scroll
+    img = @ctx.getImageData @scroll_left * @char_width, src_top * @char_height, (@scroll_right - @scroll_left + 1) * @char_width, (src_bottom - src_top + 1) * @char_height
+    @ctx.putImageData img, @scroll_left * @char_width, dst_top * @char_height
+    @clear_block @scroll_left, clr_top, @scroll_right - @scroll_left + 1, clr_bottom - clr_top + 1
+
+
+  nv_set_scroll_region: (top, bottom, left, right) ->
+    @scroll_top = top
+    @scroll_bottom = bottom
+    @scroll_left = left
+    @scroll_right = right
+
+  nv_update_fg: (rgb) -> @cursor.style.borderColor = @fg_color = @get_color_string(rgb)
+
+  nv_update_bg: (rgb) -> @bg_color = @get_color_string(rgb)
 
 module.exports = UI
