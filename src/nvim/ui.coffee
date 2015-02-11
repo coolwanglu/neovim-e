@@ -2,19 +2,39 @@ shell = require 'shell'
 EventEmitter = require('events').EventEmitter
 
 # keyIdentifier -> vim key name
-# TODO: check insert delete
 KEYMAP =
-  '\x08' : 'BS'
-  '\x09' : 'Tab'
-  '\x1b' : 'Escape'
-  '\x20' : 'Space'
-  '\x7f' : 'Del'
-
-get_key_id = (id) -> KEYMAP[id] ? id
+  8 : 'BS'
+  9 : 'Tab'
+  13 : 'Enter'
+  27 : 'Esc'
+  32 : 'Space'
+  33 : 'PageUp'
+  34 : 'PageDown'
+  35 : 'End'
+  36 : 'Home'
+  37 : 'Left'
+  38 : 'Up'
+  39 : 'Right'
+  40 : 'Down'
+  45 : 'Insert'
+  46 : 'Del'
+  112 : 'F1'
+  113 : 'F2'
+  114 : 'F3'
+  115 : 'F4'
+  116 : 'F5'
+  117 : 'F6'
+  118 : 'F7'
+  119 : 'F8'
+  120 : 'F9'
+  121 : 'F10'
+  122 : 'F11'
+  123 : 'F12'
+  127 : 'Del' # mac?
 
 KEYS_TO_INTERCEPT_UPON_KEYDOWN = {}
 KEYS_TO_INTERCEPT_UPON_KEYDOWN[k] = 1 for k in [
-  'Escape'
+  'Esc'
   'Tab'
   'BS'
   'Up', 'Down', 'Left', 'Right'
@@ -24,6 +44,8 @@ KEYS_TO_INTERCEPT_UPON_KEYDOWN[k] = 1 for k in [
 ]
 
 get_vim_key_name = (key, e) ->
+  if not (e.ctrlKey or e.atlKey or e.shiftKey)
+    return (if e.keyCode of KEYMAP then '<' + key + '>' else key)
   kn = '<'
   kn += 'S-' if e.shiftKey
   kn += 'C-' if e.ctrlKey
@@ -71,14 +93,17 @@ class UI extends EventEmitter
 
   init_key_handlers: ->
     document.addEventListener 'keypress', (e) =>
-      key = String.fromCharCode(e.charCode)
+      key = switch e.charCode
+        when 13 then KEYMAP[e.charCode]
+        else String.fromCharCode(e.charCode)
       e.preventDefault()
       @emit 'key', get_vim_key_name(key, e)
 
     document.addEventListener 'keydown', (e) =>
-      key = get_key_id e.keyIdentifier
-      if key in KEYS_TO_INTERCEPT_UPON_KEYDOWN
+      key = KEYMAP[e.keyCode]
+      if key of KEYS_TO_INTERCEPT_UPON_KEYDOWN
         e.preventDefault()
+        console.log 'name' + get_vim_key_name(key, e)
         @emit 'key', get_vim_key_name(key, e)
 
   get_color_string: (rgb) ->

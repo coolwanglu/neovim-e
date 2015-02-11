@@ -49,8 +49,8 @@ class NVim
       (_) => @ui_attach(_)
     ], =>
       @ui.on 'key', (e) =>
-        console.log e
-        @send 'vim_input', ['i']
+        console.log 'key ' + e
+        @send 'vim_input', [e]
 
   on_data: (data) ->
     switch data[0]
