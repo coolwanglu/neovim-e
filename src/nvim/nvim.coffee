@@ -1,4 +1,3 @@
-async = require 'async'
 child_process = require 'child_process'
 Session = require 'msgpack5rpc'
 remote = require 'remote'
@@ -26,14 +25,9 @@ class NVim
     @session.on 'notification', (method, args) =>
       if method == 'redraw' then @ui.handle_redraw args
 
-    async.series [
-      (_) => @ui_attach(_)
-    ], =>
+    @session.request 'ui_attach', [80, 40, true], =>
       @ui.on 'key', (e) =>
         @session.request 'vim_input', [e], =>
-
-  ui_attach: (callback) ->
-    @session.request 'ui_attach', [80, 40, true], callback
 
 
 module.exports = NVim
