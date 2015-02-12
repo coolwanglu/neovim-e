@@ -21,7 +21,6 @@
     "msgpack5rpc": "^1.0.0"
   },
   "devDependencies": {
-    "async": "^0.9.0",
     "grunt": "^0.4.5",
     "grunt-contrib-coffee": "^0.12.0"
   }
