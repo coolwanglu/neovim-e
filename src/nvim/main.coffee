@@ -1,6 +1,6 @@
 window.onload = ->
   try
-    new (require('./nvim/nvim'))()
+    window.nvim = new (require('./nvim/nvim'))()
   catch error
     win = require('remote').getCurrentWindow()
     win.setSize 800, 600

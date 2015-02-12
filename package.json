@@ -18,11 +18,11 @@
     }
   ],
   "dependencies": {
-    "msgpack5": "~1.4.0"
+    "msgpack5": "^1.5.0"
   },
   "devDependencies": {
-    "async": "~0.9.0",
-    "grunt": "~0.4.5",
-    "grunt-contrib-coffee": "~0.12.0"
+    "async": "^0.9.0",
+    "grunt": "^0.4.5",
+    "grunt-contrib-coffee": "^0.12.0"
   }
 }

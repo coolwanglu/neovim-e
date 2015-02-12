@@ -217,7 +217,7 @@ class UI extends EventEmitter
     h = @canvas.height = @char_height * row
     window.resizeTo w / @devicePixelRatio + window.outerWidth - window.innerWidth, h / @devicePixelRatio + window.outerHeight - window.innerHeight
 
-  # from neovim/python-client
+  # adapted from neovim/python-client
   nv_scroll: (row_count) ->
     src_top = dst_top = @scroll_top
     src_bottom = dst_bottom = @scroll_bottom
