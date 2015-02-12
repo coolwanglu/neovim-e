@@ -186,9 +186,7 @@ class UI extends EventEmitter
   nv_cursor_goto: (row, col) ->
     @cursor_row = row
     @cursor_col = col
-
   nv_cursor_off: -> @cursor.style.display = 'none'
-
   nv_cursor_on: -> @cursor.style.display = 'block'
 
   nv_eol_clear: -> @clear_block @cursor_col, @cursor_row, @total_col - @cursor_col + 1, 1
@@ -204,7 +202,6 @@ class UI extends EventEmitter
   nv_insert_mode: -> document.body.className = 'insert-mode'
 
   nv_mouse_off: -> @mouse_enabled = false
-
   nv_mouse_on: -> @mouse_enabled = true
 
   nv_normal_mode: -> document.body.className = 'normal-mode'
@@ -258,7 +255,6 @@ class UI extends EventEmitter
     @scroll_right = right
 
   nv_update_fg: (rgb) -> @cursor.style.borderColor = @fg_color = @get_color_string(rgb)
-
   nv_update_bg: (rgb) -> @bg_color = @get_color_string(rgb)
 
 module.exports = UI
