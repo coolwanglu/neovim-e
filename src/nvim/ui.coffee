@@ -1,3 +1,7 @@
+# ui.coffee
+# handle redraw events from neovim
+# Copyright (c) 2015 Lu Wang <coolwanglu@gmail.com>
+
 shell = require 'shell'
 EventEmitter = require('events').EventEmitter
 
@@ -63,38 +67,44 @@ get_vim_key_name = (key, e) ->
 class UI extends EventEmitter
   constructor: ->
     super()
+    @init_DOM()
+    @init_state()
+    @init_font()
+    @init_key_handlers()
 
+  init_DOM: ->
     @canvas = document.getElementById 'nvas-canvas'
     @ctx = @canvas.getContext '2d'
     @cursor = document.getElementById 'nvas-cursor'
+    @font_test_node = document.getElementById 'nvas-font-test'
     @devicePixelRatio = window.devicePixelRatio ? 1
 
-    @font = '12px monospace'
-    @font_test_node = document.getElementById 'nvas-font-test'
-
-    @char_height = 1
-    @char_width = 1
-
+  init_state: ->
     @total_col = 80
     @total_row = 40
+
     @cursor_col = 0
     @cursor_row = 0
+
+    @scroll_top = 0
+    @scroll_bottom = 0
+    @scroll_left = 0
+    @scroll_right = 0
+
+    @mouse_enabled = true
 
     @fg_color = '#fff'
     @bg_color = '#000'
     @sp_color = '#f00'
     @attrs = {}
 
-    @init_font()
-    @init_key_handlers()
-
   init_font: ->
+    @font = '12px monospace'
     @font_test_node.style.font = @font
     @font_test_node.innerHTML = 'm'
+
     @char_height = Math.max 1, @font_test_node.clientHeight * @devicePixelRatio
     @char_width = Math.max 1, @font_test_node.clientWidth * @devicePixelRatio
-    console.log 'char width: ', @char_width
-    console.log 'char height: ', @char_height
 
     @cursor.style.width = @font_test_node.clientWidth + 'px'
     @cursor.style.height = @font_test_node.clientHeight + 'px'
@@ -131,7 +141,8 @@ class UI extends EventEmitter
   # the font set to canvas might need to be scaled when devicePixelRatio != 1
   get_canvas_font: ->
     font = @font
-    if @attrs?.bold then font = 'bold ' + @font
+    if @attrs?.bold then font = 'bold ' + font
+    if @attrs?.italic then font = 'italic ' + font
     try
       l = @font.split /([\d]+)(?=in|[cem]m|ex|p[ctx])/
       l[1] = parseFloat(l[1]) * @devicePixelRatio
@@ -185,16 +196,16 @@ class UI extends EventEmitter
   nv_highlight_set: (attrs) ->
     @attrs = {}
     if attrs.bold? then @attrs.bold = attrs.bold
+    if attrs.italic? then @attrs.italic = attrs.italic
     if attrs.reverse? then @attrs.reverse = attrs.reverse
     if attrs.foreground? then @attrs.fg_color = @get_color_string(attrs.foreground)
     if attrs.background? then @attrs.bg_color = @get_color_string(attrs.background)
 
-
   nv_insert_mode: -> document.body.className = 'insert-mode'
 
-  nv_mouse_off: -> #todo
+  nv_mouse_off: -> @mouse_enabled = false
 
-  nv_mouse_on: -> #todo
+  nv_mouse_on: -> @mouse_enabled = true
 
   nv_normal_mode: -> document.body.className = 'normal-mode'
 
@@ -221,7 +232,6 @@ class UI extends EventEmitter
 
   # adapted from neovim/python-client
   nv_scroll: (row_count) ->
-    console.log 'scroll ' + row_count
     src_top = dst_top = @scroll_top
     src_bottom = dst_bottom = @scroll_bottom
 
@@ -231,6 +241,7 @@ class UI extends EventEmitter
       clr_top = dst_bottom + 1
       clr_bottom = src_bottom
     else
+      row_count = -row_count - 32 if row_count > -32 # walkaround for msgpack5 bug #14
       src_bottom += row_count
       dst_top -= row_count
       clr_top = src_top
@@ -241,7 +252,6 @@ class UI extends EventEmitter
     @clear_block @scroll_left, clr_top, @scroll_right - @scroll_left + 1, clr_bottom - clr_top + 1
 
   nv_set_scroll_region: (top, bottom, left, right) ->
-    console.log JSON.stringify arguments
     @scroll_top = top
     @scroll_bottom = bottom
     @scroll_left = left

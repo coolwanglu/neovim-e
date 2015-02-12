@@ -1,3 +1,7 @@
+# main.coffee
+# entry point of the renderer
+# Copyright (c) 2015 Lu Wang <coolwanglu@gmail.com>
+
 window.onload = ->
   try
     window.nvim = new (require('./nvim/nvim'))()

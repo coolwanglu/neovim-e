@@ -1,3 +1,7 @@
+# launcher.coffee
+# entry point of the app
+# Copyright (c) 2015 Lu Wang <coolwanglu@gmail.com>
+
 app = require 'app'
 BrowserWindow = require 'browser-window'
 
