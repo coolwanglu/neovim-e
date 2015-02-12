@@ -139,8 +139,8 @@ class UI extends EventEmitter
     catch
       @font
 
-  get_cur_fg_color: -> @attrs.fg_color ? @fg_color
-  get_cur_bg_color: -> @attrs.bg_color ? @bg_color
+  get_cur_fg_color: -> if @attrs.reverse then @attrs.bg_color ? @bg_color else @attrs.fg_color ? @fg_color
+  get_cur_bg_color: -> if @attrs.reverse then @attrs.fg_color ? @fg_color else @attrs.bg_color ? @bg_color
 
   update_cursor: ->
     @cursor.style.top = (@cursor_row * @char_height / @devicePixelRatio) + 'px'
@@ -185,8 +185,10 @@ class UI extends EventEmitter
   nv_highlight_set: (attrs) ->
     @attrs = {}
     if attrs.bold? then @attrs.bold = attrs.bold
+    if attrs.reverse? then @attrs.reverse = attrs.reverse
     if attrs.foreground? then @attrs.fg_color = @get_color_string(attrs.foreground)
     if attrs.background? then @attrs.bg_color = @get_color_string(attrs.background)
+
 
   nv_insert_mode: -> document.body.className = 'insert-mode'
 
@@ -219,25 +221,27 @@ class UI extends EventEmitter
 
   # adapted from neovim/python-client
   nv_scroll: (row_count) ->
+    console.log 'scroll ' + row_count
     src_top = dst_top = @scroll_top
     src_bottom = dst_bottom = @scroll_bottom
 
     if row_count > 0 # move up
       src_top += row_count
       dst_bottom -= row_count
-      clr_top = dst_bottom
+      clr_top = dst_bottom + 1
       clr_bottom = src_bottom
     else
       src_bottom += row_count
       dst_top -= row_count
       clr_top = src_top
-      clr_bottom = dst_top
+      clr_bottom = dst_top - 1
 
     img = @ctx.getImageData @scroll_left * @char_width, src_top * @char_height, (@scroll_right - @scroll_left + 1) * @char_width, (src_bottom - src_top + 1) * @char_height
     @ctx.putImageData img, @scroll_left * @char_width, dst_top * @char_height
     @clear_block @scroll_left, clr_top, @scroll_right - @scroll_left + 1, clr_bottom - clr_top + 1
 
   nv_set_scroll_region: (top, bottom, left, right) ->
+    console.log JSON.stringify arguments
     @scroll_top = top
     @scroll_bottom = bottom
     @scroll_left = left
