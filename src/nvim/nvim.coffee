@@ -29,7 +29,7 @@ class NVim
       @ui.handle_redraw args if method == 'redraw'
 
     @session.request 'ui_attach', [80, 40, true], =>
-      @ui.on 'key', (e) =>
+      @ui.on 'input', (e) =>
         @session.request 'vim_input', [e], =>
 
 

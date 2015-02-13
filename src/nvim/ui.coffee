@@ -38,21 +38,20 @@ KEYMAP =
 
 KEYS_TO_INTERCEPT_UPON_KEYDOWN = {}
 KEYS_TO_INTERCEPT_UPON_KEYDOWN[k] = 1 for k in [
-  'Esc'
-  'Tab'
-  'BS'
+  'Esc', 'Tab', 'BS'
   'Up', 'Down', 'Left', 'Right'
-  'Home', 'End'
   'Del'
+  'Home', 'End'
   'PageUp', 'PageDown'
 ]
+
+MOUSE_BUTTON_NAME = [ 'Left', 'Middle', 'Right' ]
 
 # TODO handle shiftKey if necessary
 get_vim_key_name = (key, e) ->
   if not (e.ctrlKey or e.atlKey)
     if e.charCode and key.length == 1
-      if key == '<' then '<lt>'
-      else key
+      if key == '<' then '<lt>' else key
     else '<' + key + '>'
   else
     kn = '<'
@@ -63,6 +62,14 @@ get_vim_key_name = (key, e) ->
     kn += key + '>'
     kn
 
+get_vim_button_name = (button, e) ->
+  kn = '<'
+  kn += 'S-' if e.shiftKey
+  kn += 'C-' if e.ctrlKey
+  kn += 'A-' if e.altKey
+  kn += button + '>'
+  kn
+
 # visualize neovim's abstract-ui
 class UI extends EventEmitter
   constructor: ->
@@ -70,7 +77,7 @@ class UI extends EventEmitter
     @init_DOM()
     @init_state()
     @init_font()
-    @init_key_handlers()
+    @init_input_handlers()
 
   init_DOM: ->
     @canvas = document.getElementById 'nvas-canvas'
@@ -92,6 +99,7 @@ class UI extends EventEmitter
     @scroll_right = 0
 
     @mouse_enabled = true
+    @mouse_button_pressed = null
 
     @fg_color = '#fff'
     @bg_color = '#000'
@@ -103,25 +111,51 @@ class UI extends EventEmitter
     @font_test_node.style.font = @font
     @font_test_node.innerHTML = 'm'
 
-    @char_height = Math.max 1, @font_test_node.clientHeight * @devicePixelRatio
-    @char_width = Math.max 1, @font_test_node.clientWidth * @devicePixelRatio
+    @char_width = Math.max 1, @font_test_node.clientWidth
+    @char_height = Math.max 1, @font_test_node.clientHeight
+    @canvas_char_width = @char_width * @devicePixelRatio
+    @canvas_char_height = @char_height * @devicePixelRatio
 
-    @cursor.style.width = @font_test_node.clientWidth + 'px'
-    @cursor.style.height = @font_test_node.clientHeight + 'px'
+    @cursor.style.width = @char_width + 'px'
+    @cursor.style.height = @char_height + 'px'
 
-  init_key_handlers: ->
+  init_input_handlers: ->
     document.addEventListener 'keypress', (e) =>
       key = switch e.charCode
         when 13 then KEYMAP[e.charCode]
         else String.fromCharCode(e.charCode)
       e.preventDefault()
-      @emit 'key', get_vim_key_name(key, e)
+      @emit 'input', get_vim_key_name(key, e)
 
     document.addEventListener 'keydown', (e) =>
       key = KEYMAP[e.keyCode]
       if key of KEYS_TO_INTERCEPT_UPON_KEYDOWN
         e.preventDefault()
-        @emit 'key', get_vim_key_name(key, e)
+        @emit 'input', get_vim_key_name(key, e)
+
+    document.addEventListener 'mousedown', (e) =>
+      return if not @mouse_enabled
+      e.preventDefault()
+      @mouse_button_pressed = MOUSE_BUTTON_NAME[e.button]
+      @emit 'input',
+        get_vim_button_name(@mouse_button_pressed + 'Mouse', e) \
+          + '<' + Math.floor(e.clientX / @char_width) \
+          + ',' + Math.floor(e.clientY / @char_height) \
+          + '>'
+
+    document.addEventListener 'mouseup', (e) =>
+      return if not @mouse_enabled
+      e.preventDefault()
+      @mouse_button_pressed = null
+
+    document.addEventListener 'mousemove', (e) =>
+      return if not @mouse_enabled or not @mouse_button_pressed
+      e.preventDefault()
+      @emit 'input',
+        get_vim_button_name(@mouse_button_pressed + 'Drag', e) \
+          + '<' + Math.floor(e.clientX / @char_width) \
+          + ',' + Math.floor(e.clientY / @char_height) \
+          + '>'
 
   get_color_string: (rgb) ->
     bgr = []
@@ -132,13 +166,18 @@ class UI extends EventEmitter
 
   clear_block: (col, row, width, height) ->
     @ctx.fillStyle = @get_cur_bg_color()
-    @ctx.fillRect col * @char_width, row * @char_height, width * @char_width, height * @char_height
+    @ctx.fillRect \
+      col * @canvas_char_width, \
+      row * @canvas_char_height, \
+      width * @canvas_char_width, \
+      height * @canvas_char_height
 
   clear_all: ->
     @ctx.fillStyle = @get_cur_bg_color()
     @ctx.fillRect 0, 0, @canvas.width, @canvas.height
 
-  # the font set to canvas might need to be scaled when devicePixelRatio != 1
+  # the font set to canvas might need to be scaled
+  # when devicePixelRatio != 1
   get_canvas_font: ->
     font = @font
     if @attrs?.bold then font = 'bold ' + font
@@ -154,8 +193,8 @@ class UI extends EventEmitter
   get_cur_bg_color: -> if @attrs.reverse then @attrs.fg_color ? @fg_color else @attrs.bg_color ? @bg_color
 
   update_cursor: ->
-    @cursor.style.top = (@cursor_row * @char_height / @devicePixelRatio) + 'px'
-    @cursor.style.left = (@cursor_col * @char_width / @devicePixelRatio) + 'px'
+    @cursor.style.top = (@cursor_row * @char_height) + 'px'
+    @cursor.style.left = (@cursor_col * @char_width) + 'px'
 
 
   #####################
@@ -216,16 +255,21 @@ class UI extends EventEmitter
     @ctx.textBaseline = 'bottom'
 
     @ctx.fillStyle = @get_cur_fg_color()
-    @ctx.fillText str, @cursor_col * @char_width, (@cursor_row + 1) * @char_height, str.length * @char_width
+    @ctx.fillText str, \
+      @cursor_col * @canvas_char_width, \
+      (@cursor_row + 1) * @canvas_char_height, \
+      str.length * @canvas_char_width
 
     @cursor_col += str.length
 
   nv_resize: (col, row) ->
     @total_col = col
     @total_row = row
-    w = @canvas.width = @char_width * col
-    h = @canvas.height = @char_height * row
-    window.resizeTo w / @devicePixelRatio + window.outerWidth - window.innerWidth, h / @devicePixelRatio + window.outerHeight - window.innerHeight
+    @canvas.width = @canvas_char_width * col
+    @canvas.height = @canvas_char_height * row
+    window.resizeTo \
+      @char_width * col + window.outerWidth - window.innerWidth, \
+      @char_height * row + window.outerHeight - window.innerHeight
 
   # adapted from neovim/python-client
   nv_scroll: (row_count) ->
@@ -244,9 +288,19 @@ class UI extends EventEmitter
       clr_top = src_top
       clr_bottom = dst_top - 1
 
-    img = @ctx.getImageData @scroll_left * @char_width, src_top * @char_height, (@scroll_right - @scroll_left + 1) * @char_width, (src_bottom - src_top + 1) * @char_height
-    @ctx.putImageData img, @scroll_left * @char_width, dst_top * @char_height
-    @clear_block @scroll_left, clr_top, @scroll_right - @scroll_left + 1, clr_bottom - clr_top + 1
+    img = @ctx.getImageData \
+      @scroll_left * @canvas_char_width, \
+      src_top * @canvas_char_height, \
+      (@scroll_right - @scroll_left + 1) * @canvas_char_width, \
+      (src_bottom - src_top + 1) * @canvas_char_height
+    @ctx.putImageData img, \
+      @scroll_left * @canvas_char_width, \
+      dst_top * @canvas_char_height
+    @clear_block \
+      @scroll_left, \
+      clr_top, \
+      @scroll_right - @scroll_left + 1, \
+      clr_bottom - clr_top + 1
 
   nv_set_scroll_region: (top, bottom, left, right) ->
     @scroll_top = top
