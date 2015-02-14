@@ -77,7 +77,7 @@ class UI extends EventEmitter
     @init_DOM()
     @init_state()
     @init_font()
-    @init_input_handlers()
+    @init_event_handlers()
 
   init_DOM: ->
     @canvas = document.getElementById 'nvas-canvas'
@@ -106,8 +106,10 @@ class UI extends EventEmitter
     @sp_color = '#f00'
     @attrs = {}
 
+    @resize_timer = null
+
   init_font: ->
-    @font = '12px monospace'
+    @font = '13px monospace'
     @font_test_node.style.font = @font
     @font_test_node.innerHTML = 'm'
 
@@ -119,7 +121,7 @@ class UI extends EventEmitter
     @cursor.style.width = @char_width + 'px'
     @cursor.style.height = @char_height + 'px'
 
-  init_input_handlers: ->
+  init_event_handlers: ->
     document.addEventListener 'keypress', (e) =>
       key = switch e.charCode
         when 13 then KEYMAP[e.charCode]
@@ -156,6 +158,16 @@ class UI extends EventEmitter
           + '<' + Math.floor(e.clientX / @char_width) \
           + ',' + Math.floor(e.clientY / @char_height) \
           + '>'
+
+    window.addEventListener 'resize', (e) =>
+      clearTimeout @resize_timer if @resize_timer?
+      @resize_timer = setTimeout =>
+        @resize_timer = null
+        col = Math.floor window.innerWidth / @char_width
+        row = Math.floor window.innerHeight / @char_height
+        if col != @total_col or row != @total_row
+          @emit 'resize', col, row
+      , 100
 
   get_color_string: (rgb) ->
     bgr = []

@@ -30,7 +30,9 @@ class NVim
 
     @session.request 'ui_attach', [80, 40, true], =>
       @ui.on 'input', (e) =>
-        @session.request 'vim_input', [e], =>
+        @session.request 'vim_input', [e], ->
+      @ui.on 'resize', (col, row) =>
+        @session.request 'ui_try_resize', [col, row], ->
 
 
 module.exports = NVim

@@ -6,8 +6,8 @@ app = require 'app'
 BrowserWindow = require 'browser-window'
 
 process.on 'uncaughtException', (error={}) ->
-  console.log(error.message) if error.message?
-  console.log(error.stack) if error.stack?
+  console.log error.message  if error.message?
+  console.log error.stack  if error.stack?
 
 app.on 'window-all-closed', -> app.quit()
 
