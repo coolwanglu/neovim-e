@@ -4,9 +4,7 @@
 
 shell = require 'shell'
 EventEmitter = require('events').EventEmitter
-
-DEFAULT_FG = '#000'
-DEFAULT_BG = '#fff'
+config = require './config'
 
 # keyIdentifier -> vim key name
 KEYMAP =
@@ -75,12 +73,13 @@ get_vim_button_name = (button, e) ->
 
 # visualize neovim's abstract-ui
 class UI extends EventEmitter
-  constructor: ->
+  constructor: (row, col)->
     super()
     @init_DOM()
     @init_state()
     @init_font()
     @init_event_handlers()
+    @nv_resize row, col
 
   init_DOM: ->
     @canvas = document.getElementById 'nvas-canvas'
@@ -90,16 +89,9 @@ class UI extends EventEmitter
     @devicePixelRatio = window.devicePixelRatio ? 1
 
   init_state: ->
-    @total_col = 80
-    @total_row = 40
-
+    # @total_row/col, @scroll_top/bottom/left/right will be set in @nv_resize
     @cursor_col = 0
     @cursor_row = 0
-
-    @scroll_top = 0
-    @scroll_bottom = 0
-    @scroll_left = 0
-    @scroll_right = 0
 
     @mouse_enabled = true
     @mouse_button_pressed = null
@@ -229,7 +221,7 @@ class UI extends EventEmitter
         else console.log 'Redraw event not handled: ' + JSON.stringify e
       catch ex
         console.log 'Error when processing event!'
-        console.log JSON.stringify e
+        console.log e.toString()
         console.log ex.stack || ex
     @update_cursor()
 
@@ -280,6 +272,12 @@ class UI extends EventEmitter
   nv_resize: (col, row) ->
     @total_col = col
     @total_row = row
+
+    @scroll_top = 0
+    @scroll_bottom = @total_row - 1
+    @scroll_left = 0
+    @scroll_right = @total_col - 1
+
     @canvas.width = @canvas_char_width * col
     @canvas.height = @canvas_char_height * row
     window.resizeTo \
@@ -322,7 +320,7 @@ class UI extends EventEmitter
     @scroll_left = left
     @scroll_right = right
 
-  nv_update_fg: (rgb) -> @cursor.style.borderColor = @fg_color = if rgb == -1 then DEFAULT_FG else @get_color_string(rgb)
-  nv_update_bg: (rgb) -> @bg_color = if rgb == -1 then DEFAULT_BG else @get_color_string(rgb)
+  nv_update_fg: (rgb) -> @cursor.style.borderColor = @fg_color = if rgb == -1 then config.fg_color else @get_color_string(rgb)
+  nv_update_bg: (rgb) -> @bg_color = if rgb == -1 then config.bg_color else @get_color_string(rgb)
 
 module.exports = UI

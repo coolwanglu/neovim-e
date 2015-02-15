@@ -6,10 +6,11 @@ child_process = require 'child_process'
 Session = require 'msgpack5rpc'
 remote = require 'remote'
 UI = require './ui'
+config = require './config'
 
 class NVim
   constructor: ->
-    @ui = new UI()
+    @ui = new UI(config.row, config.col)
 
     # Atom Shell apps are run as 'Atom <path> <args>'
     # might need a better way to locate the arguments
@@ -28,7 +29,7 @@ class NVim
     @session.on 'notification', (method, args) =>
       @ui.handle_redraw args if method == 'redraw'
 
-    @session.request 'ui_attach', [80, 40, true], =>
+    @session.request 'ui_attach', [config.row, config.col, true], =>
       @ui.on 'input', (e) =>
         @session.request 'vim_input', [e], ->
       @ui.on 'resize', (col, row) =>

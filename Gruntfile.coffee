@@ -11,6 +11,7 @@ module.exports = (grunt) ->
           sourceMap: true
         files:
           'src/launcher.js': 'src/launcher.coffee'
+          'src/nvim/config.js': 'src/nvim/config.coffee'
           'src/nvim/main.js': 'src/nvim/main.coffee'
           'src/nvim/nvim.js': 'src/nvim/nvim.coffee'
           'src/nvim/ui.js': 'src/nvim/ui.coffee'
