@@ -218,7 +218,7 @@ class UI extends EventEmitter
           else
             for args in e[1..]
               handler.apply @, args
-        else console.log 'Redraw event not handled: ' + JSON.stringify e
+        else console.log 'Redraw event not handled: ' + e.toString()
       catch ex
         console.log 'Error when processing event!'
         console.log e.toString()
@@ -313,6 +313,10 @@ class UI extends EventEmitter
       clr_top, \
       @scroll_right - @scroll_left + 1, \
       clr_bottom - clr_top + 1
+
+  nv_set_title: (title) ->
+    match = /(.*) - VIM$/.exec(title)
+    document.title = if match? then match[1] + ' - Neovim.AS' else title
 
   nv_set_scroll_region: (top, bottom, left, right) ->
     @scroll_top = top
