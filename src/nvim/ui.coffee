@@ -4,6 +4,7 @@
 
 shell = require 'shell'
 EventEmitter = require('events').EventEmitter
+remote = require 'remote'
 config = require './config'
 
 # keyIdentifier -> vim key name
@@ -314,7 +315,10 @@ class UI extends EventEmitter
       @scroll_right - @scroll_left + 1, \
       clr_bottom - clr_top + 1
 
+  nv_set_icon: (icon) -> remote.getCurrentWindow().setRepresentedFilename? icon.toString()
+
   nv_set_title: (title) ->
+    title = title.toString()
     match = /(.*) - VIM$/.exec(title)
     document.title = if match? then match[1] + ' - Neovim.AS' else title
 
