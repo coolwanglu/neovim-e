@@ -5,6 +5,9 @@
 shell = require 'shell'
 EventEmitter = require('events').EventEmitter
 
+DEFAULT_FG = '#000'
+DEFAULT_BG = '#fff'
+
 # keyIdentifier -> vim key name
 KEYMAP =
   8 : 'BS'
@@ -294,7 +297,6 @@ class UI extends EventEmitter
       clr_top = dst_bottom + 1
       clr_bottom = src_bottom
     else
-      row_count = -row_count - 32 if row_count > -32 # walkaround for msgpack5 bug #14
       src_bottom += row_count
       dst_top -= row_count
       clr_top = src_top
@@ -320,7 +322,7 @@ class UI extends EventEmitter
     @scroll_left = left
     @scroll_right = right
 
-  nv_update_fg: (rgb) -> @cursor.style.borderColor = @fg_color = @get_color_string(rgb)
-  nv_update_bg: (rgb) -> @bg_color = @get_color_string(rgb)
+  nv_update_fg: (rgb) -> @cursor.style.borderColor = @fg_color = if rgb == -1 then DEFAULT_FG else @get_color_string(rgb)
+  nv_update_bg: (rgb) -> @bg_color = if rgb == -1 then DEFAULT_BG else @get_color_string(rgb)
 
 module.exports = UI
