@@ -6,63 +6,9 @@ shell = require 'shell'
 EventEmitter = require('events').EventEmitter
 remote = require 'remote'
 config = require './config'
-
-# keyIdentifier -> vim key name
-KEYMAP =
-  8 : 'BS'
-  9 : 'Tab'
-  13 : 'Enter'
-  27 : 'Esc'
-  32 : 'Space'
-  33 : 'PageUp'
-  34 : 'PageDown'
-  35 : 'End'
-  36 : 'Home'
-  37 : 'Left'
-  38 : 'Up'
-  39 : 'Right'
-  40 : 'Down'
-  45 : 'Insert'
-  46 : 'Del'
-  112 : 'F1'
-  113 : 'F2'
-  114 : 'F3'
-  115 : 'F4'
-  116 : 'F5'
-  117 : 'F6'
-  118 : 'F7'
-  119 : 'F8'
-  120 : 'F9'
-  121 : 'F10'
-  122 : 'F11'
-  123 : 'F12'
-  127 : 'Del' # mac?
-
-KEYS_TO_INTERCEPT_UPON_KEYDOWN = {}
-KEYS_TO_INTERCEPT_UPON_KEYDOWN[k] = 1 for k in [
-  'Esc', 'Tab', 'BS'
-  'Up', 'Down', 'Left', 'Right'
-  'Del'
-  'Home', 'End'
-  'PageUp', 'PageDown'
-]
+{keystrokeForKeyboardEvent} = require './key_handler'
 
 MOUSE_BUTTON_NAME = [ 'Left', 'Middle', 'Right' ]
-
-# TODO handle shiftKey if necessary
-get_vim_key_name = (key, e) ->
-  if not (e.ctrlKey or e.atlKey)
-    if e.charCode and key.length == 1
-      if key == '<' then '<lt>' else key
-    else '<' + key + '>'
-  else
-    kn = '<'
-    kn += 'C-' if e.ctrlKey
-    kn += 'A-' if e.altKey
-    if e.ctrlKey and 1 <= e.charCode and e.charCode <= 26
-      key = String.fromCharCode(96 + e.charCode)
-    kn += key + '>'
-    kn
 
 get_vim_button_name = (button, e) ->
   kn = '<'
@@ -118,18 +64,9 @@ class UI extends EventEmitter
     @cursor.style.height = @char_height + 'px'
 
   init_event_handlers: ->
-    document.addEventListener 'keypress', (e) =>
-      key = switch e.charCode
-        when 13 then KEYMAP[e.charCode]
-        else String.fromCharCode(e.charCode)
-      e.preventDefault()
-      @emit 'input', get_vim_key_name(key, e)
-
     document.addEventListener 'keydown', (e) =>
-      key = KEYMAP[e.keyCode]
-      if key of KEYS_TO_INTERCEPT_UPON_KEYDOWN
-        e.preventDefault()
-        @emit 'input', get_vim_key_name(key, e)
+      keystroke = keystrokeForKeyboardEvent(e)
+      @emit 'input', keystroke if keystroke
 
     document.addEventListener 'mousedown', (e) =>
       return if not @mouse_enabled
