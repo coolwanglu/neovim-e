@@ -177,9 +177,11 @@ class UI extends EventEmitter
 
   nv_highlight_set: (attrs) ->
     @attrs = {}
-    if attrs.bold? then @attrs.bold = attrs.bold
-    if attrs.italic? then @attrs.italic = attrs.italic
-    if attrs.reverse? then @attrs.reverse = attrs.reverse
+    @attrs.bold = attrs.bold
+    @attrs.italic = attrs.italic
+    @attrs.reverse = attrs.reverse
+    @attrs.underline = attrs.underline
+    @attrs.undercurl = attrs.undercurl
     if attrs.foreground? then @attrs.fg_color = @get_color_string(attrs.foreground)
     if attrs.background? then @attrs.bg_color = @get_color_string(attrs.background)
 
@@ -199,11 +201,30 @@ class UI extends EventEmitter
     @ctx.font = @get_canvas_font()
     @ctx.textBaseline = 'bottom'
 
+    x = @cursor_col * @canvas_char_width
+    y = (@cursor_row + 1) * @canvas_char_height
+    w = str.length * @canvas_char_width
+
     @ctx.fillStyle = @get_cur_fg_color()
-    @ctx.fillText str, \
-      @cursor_col * @canvas_char_width, \
-      (@cursor_row + 1) * @canvas_char_height, \
-      str.length * @canvas_char_width
+    @ctx.fillText str, x, y, w
+
+    if @attrs.underline
+      @ctx.strokeStyle = @get_cur_fg_color()
+      @ctx.lineWidth = @devicePixelRatio
+      @ctx.beginPath()
+      @ctx.moveTo x, y - @devicePixelRatio / 2
+      @ctx.lineTo x + w, y - @devicePixelRatio / 2
+      @ctx.stroke()
+
+    if @attrs.undercurl
+      offs = [1.5, 0.5, 0.5, 0.5, 1.5, 2.5, 2.5, 2.5]
+      @ctx.strokeStyle = @get_cur_fg_color()
+      @ctx.lineWidth = @devicePixelRatio
+      @ctx.beginPath()
+      @ctx.moveTo x, y - @devicePixelRatio * offs[(x / @devicePixelRatio) % 8]
+      for xx in [x+@devicePixelRatio..x+w] by @devicePixelRatio
+        @ctx.lineTo xx, y - @devicePixelRatio * offs[(xx / @devicePixelRatio) % 8]
+      @ctx.stroke()
 
     @cursor_col += str.length
 
