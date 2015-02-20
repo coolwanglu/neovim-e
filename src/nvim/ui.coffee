@@ -217,7 +217,7 @@ class UI extends EventEmitter
       @ctx.stroke()
 
     if @attrs.undercurl
-      offs = [1.5, 0.5, 0.5, 0.5, 1.5, 2.5, 2.5, 2.5]
+      offs = [1.5, 0.8, 0.5, 0.8, 1.5, 2.2, 2.5, 2.2]
       @ctx.strokeStyle = @get_cur_fg_color()
       @ctx.lineWidth = @devicePixelRatio
       @ctx.beginPath()
