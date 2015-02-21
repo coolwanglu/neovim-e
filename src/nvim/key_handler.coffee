@@ -159,12 +159,19 @@ translateCharCodeForWindowsAndLinuxChromiumBug = (charCode, shift) ->
     charCode
 
 keyFromCharCode = (charCode) ->
+  # See :help key-notation
   switch charCode
+    when 0 then 'Nul'
     when 8 then 'BS'
     when 9 then 'Tab'
+    when 10 then 'NL'
+    when 12 then 'FF'
     when 13 then 'Enter'
     when 27 then 'Esc'
     when 32 then 'Space'
+    when 60 then 'lt'
+    when 92 then 'Bslash'
+    when 124 then 'Bar'
     when 127 then 'Del'
     else String.fromCharCode(charCode)
 
