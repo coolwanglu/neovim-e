@@ -93,14 +93,16 @@ class UI extends EventEmitter
           + '>'
 
     window.addEventListener 'resize', (e) =>
-      clearTimeout @resize_timer if @resize_timer?
-      @resize_timer = setTimeout =>
-        @resize_timer = null
-        col = Math.floor window.innerWidth / @char_width
-        row = Math.floor window.innerHeight / @char_height
-        if col != @total_col or row != @total_row
-          @emit 'resize', col, row
-      , 100
+      if not @resize_timer
+        @resize_timer = setTimeout =>
+          @resize_timer = null
+          col = Math.floor window.innerWidth / @char_width
+          row = Math.floor window.innerHeight / @char_height
+
+          if col != @total_col or row != @total_row
+            @emit 'resize', col, row
+
+        , 250
 
   get_color_string: (rgb) ->
     bgr = []
@@ -118,6 +120,7 @@ class UI extends EventEmitter
       height * @canvas_char_height
 
   clear_all: ->
+    document.body.style.background = @get_cur_bg_color()
     @ctx.fillStyle = @get_cur_bg_color()
     @ctx.fillRect 0, 0, @canvas.width, @canvas.height
 
@@ -240,9 +243,17 @@ class UI extends EventEmitter
 
     @canvas.width = @canvas_char_width * col
     @canvas.height = @canvas_char_height * row
-    window.resizeTo \
-      @char_width * col + window.outerWidth - window.innerWidth, \
-      @char_height * row + window.outerHeight - window.innerHeight
+
+    @canvas.style.width = @char_width * col + "px"
+    @canvas.style.height = @char_height * row + "px"
+
+    window_col = Math.floor window.innerWidth / @char_width
+    window_row = Math.floor window.innerHeight / @char_height
+
+    if col != window_col || row != window_row
+      window.resizeTo \
+        @char_width * col + window.outerWidth - window.innerWidth, \
+        @char_height * row + window.outerHeight - window.innerHeight
 
   # adapted from neovim/python-client
   nv_scroll: (row_count) ->
