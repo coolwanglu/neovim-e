@@ -149,10 +149,10 @@ class UI extends EventEmitter
     for e in events
       try
         handler = @['nv_'+e[0]]
-        # optimize for put, we group the chars together
         if handler?
-          if e[0] == 'put'
-            handler.call @, (i[0] for i in e.slice(1)).join ''
+          # optimize for put, we group the chars together
+          if e[0].toString() == 'put'
+            handler.call @, e[1..]
           else
             for args in e[1..]
               handler.apply @, args
@@ -192,10 +192,11 @@ class UI extends EventEmitter
 
   nv_normal_mode: -> document.body.className = 'normal-mode'
 
-  nv_put: (str) ->
-    return if str.length == 0
+  nv_put: (chars) ->
+    return if chars.length == 0
+
     # paint background
-    @clear_block @cursor_col, @cursor_row, str.length, 1
+    @clear_block @cursor_col, @cursor_row, chars.length, 1
 
     # paint string
     @ctx.font = @get_canvas_font()
@@ -203,10 +204,16 @@ class UI extends EventEmitter
 
     x = @cursor_col * @canvas_char_width
     y = (@cursor_row + 1) * @canvas_char_height
-    w = str.length * @canvas_char_width
+    w = chars.length * @canvas_char_width
 
     @ctx.fillStyle = @get_cur_fg_color()
-    @ctx.fillText str, x, y, w
+
+    # Paint each char individually in order to ensure they
+    # line up as expected
+    char_x = x
+    for char in chars
+      @ctx.fillText char, char_x, y, @canvas_char_width
+      char_x += @canvas_char_width
 
     if @attrs.underline
       @ctx.strokeStyle = @get_cur_fg_color()
@@ -227,7 +234,7 @@ class UI extends EventEmitter
         @ctx.lineTo xx, y - @devicePixelRatio * offs[(xx / @devicePixelRatio) % 8]
       @ctx.stroke()
 
-    @cursor_col += str.length
+    @cursor_col += chars.length
 
   nv_resize: (col, row) ->
     @total_col = col
