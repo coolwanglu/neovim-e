@@ -18,7 +18,8 @@
     }
   ],
   "dependencies": {
-    "msgpack5rpc": "^1.0.0"
+    "msgpack5rpc": "^1.0.0",
+    "cson": "^2.0.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

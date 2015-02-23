@@ -51,7 +51,7 @@ class UI extends EventEmitter
     @resize_timer = null
 
   init_font: ->
-    @font = '13px Inconsolata, Monaco, Consolas, \'Source Code Pro\', \'Ubuntu Mono\', \'DejaVu Sans Mono\', \'Courier New\', Courier, monospace'
+    @font = config.font
     @font_test_node.style.font = @font
     @font_test_node.innerHTML = 'm'
 
