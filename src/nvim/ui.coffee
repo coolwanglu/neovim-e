@@ -215,7 +215,7 @@ class UI extends EventEmitter
     # line up as expected
     char_x = x
     for char in chars
-      @ctx.fillText char, char_x, y, @canvas_char_width
+      @ctx.fillText char, char_x, y
       char_x += @canvas_char_width
 
     if @attrs.underline
