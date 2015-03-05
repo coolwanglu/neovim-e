@@ -10,6 +10,11 @@ config = require './config'
 
 MOUSE_BUTTON_NAME = [ 'Left', 'Middle', 'Right' ]
 
+# neovim/vim scrolls by 3 rows for every ScrollWheel{Up,Down}
+# and 6 colums per ScrollWheel{Left,Right} (:h scroll-mouse-wheel)
+ROWS_PER_SCROLL = 3
+COLS_PER_SCROLL = 6
+
 get_vim_button_name = (button, e) ->
   kn = '<'
   kn += 'S-' if e.shiftKey
@@ -42,6 +47,8 @@ class UI extends EventEmitter
 
     @mouse_enabled = true
     @mouse_button_pressed = null
+    @wheelDeltaY = 0
+    @wheelDeltaX = 0
 
     @fg_color = '#fff'
     @bg_color = '#000'
@@ -103,6 +110,32 @@ class UI extends EventEmitter
             @emit 'resize', col, row
 
         , 250
+
+    @canvas.addEventListener 'wheel', (e) =>
+      return if not @mouse_enabled
+      e.preventDefault()
+
+      # Total distance scrolled in pixels
+      @wheelDeltaX += e.wheelDeltaX
+      @wheelDeltaY += e.wheelDeltaY
+
+      # Get the number of row/column scroll events to send. Reporting a single
+      # row scrolled will actually scroll by ROWS_PER_SCROLL, so divide accordingly
+      cols = Math.round(@wheelDeltaX / @char_width / COLS_PER_SCROLL)
+      rows = Math.round(@wheelDeltaY / @char_height / ROWS_PER_SCROLL)
+
+      if rows == 0 && cols == 0
+        return
+
+      if cols != 0
+        @wheelDeltaX = 0
+        direction = if cols > 0 then 'Left' else 'Right'
+      if rows != 0
+        @wheelDeltaY = 0
+        direction = if rows > 0 then 'Up' else 'Down'
+
+      @emit 'input', get_vim_button_name('ScrollWheel' + direction, e) \
+        + '<' + cols + ',' + rows + '>'
 
   get_color_string: (rgb) ->
     bgr = []
