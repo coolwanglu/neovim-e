@@ -30,6 +30,7 @@ class UI extends EventEmitter
     @init_DOM()
     @init_state()
     @init_font()
+    @init_cursor()
     @init_event_handlers()
     @nv_resize row, col
 
@@ -67,8 +68,14 @@ class UI extends EventEmitter
     @canvas_char_width = @char_width * @devicePixelRatio
     @canvas_char_height = @char_height * @devicePixelRatio
 
+  init_cursor: ->
     @cursor.style.width = @char_width + 'px'
     @cursor.style.height = @char_height + 'px'
+
+    if config.blink_cursor
+      @cursor.classList.add('blink')
+    else
+      @cursor.classList.remove('blink')
 
   init_event_handlers: ->
     document.addEventListener 'keydown', (e) =>

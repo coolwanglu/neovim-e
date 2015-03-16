@@ -25,13 +25,15 @@ canvas {
   position: absolute;
   box-sizing: border-box;
   border: 1px solid;
-
-  -webkit-animation: 1s blink step-end infinite;
 }
 
 .insert-mode #nvas-cursor {
   border: 0;
   border-left: 2px solid;
+}
+
+#nvas-cursor.blink {
+  -webkit-animation: 1s blink step-end infinite;
 }
 
 @-webkit-keyframes blink {

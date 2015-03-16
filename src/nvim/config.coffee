@@ -14,6 +14,7 @@ config =
   row: 80
   col: 40
   font: '13px Inconsolata, Monaco, Consolas, \'Source Code Pro\', \'Ubuntu Mono\', \'DejaVu Sans Mono\', \'Courier New\', Courier, monospace'
+  blink_cursor: true
 
 user_config_file_name = path.join app.getPath('userData'), 'config.cson'
 try
