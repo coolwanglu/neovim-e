@@ -29,7 +29,16 @@ canvas {
 
 .insert-mode #nvas-cursor {
   border: 0;
-  border-left: 1px solid;
+  border-left: 2px solid;
+}
+
+#nvas-cursor.blink {
+  -webkit-animation: 1s blink step-end infinite;
+}
+
+@-webkit-keyframes blink {
+  0%   { opacity: 1 }
+  50%  { opacity: 0 }
 }
 
 #nvas-font-test {
