@@ -145,7 +145,10 @@ class UI extends EventEmitter
     'rgb('+bgr[2]+','+bgr[1]+','+bgr[0]+')'
 
   clear_block: (col, row, width, height) ->
-    @ctx.fillStyle = @get_cur_bg_color()
+    @fill_block(col, row, width, height, @get_cur_bg_color())
+
+  fill_block: (col, row, width, height, color) ->
+    @ctx.fillStyle = color
     @ctx.fillRect \
       col * @canvas_char_width, \
       row * @canvas_char_height, \
@@ -319,11 +322,13 @@ class UI extends EventEmitter
     @ctx.putImageData img, \
       @scroll_left * @canvas_char_width, \
       dst_top * @canvas_char_height
-    @clear_block \
+
+    @fill_block \
       @scroll_left, \
       clr_top, \
       @scroll_right - @scroll_left + 1, \
-      clr_bottom - clr_top + 1
+      clr_bottom - clr_top + 1, \
+      @bg_color
 
   nv_set_icon: (icon) -> remote.getCurrentWindow().setRepresentedFilename? icon.toString()
 
