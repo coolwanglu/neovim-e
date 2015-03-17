@@ -211,13 +211,14 @@ class UI extends EventEmitter
 
   nv_bell: -> shell.beep()
 
+  nv_busy_start: -> @cursor.style.display = 'none'
+  nv_busy_stop: -> @cursor.style.display = 'block'
+
   nv_clear: -> @clear_all()
 
   nv_cursor_goto: (row, col) ->
     @cursor_row = row
     @cursor_col = col
-  nv_cursor_off: -> @cursor.style.display = 'none'
-  nv_cursor_on: -> @cursor.style.display = 'block'
 
   nv_eol_clear: -> @clear_block @cursor_col, @cursor_row, @total_col - @cursor_col + 1, 1
 
