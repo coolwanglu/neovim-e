@@ -29,7 +29,7 @@ class NVim
     @session.on 'notification', (method, args) =>
       @ui.handle_redraw args if method == 'redraw'
 
-    @session.request 'ui_attach', [config.row, config.col, true], =>
+    @session.request 'ui_attach', [config.col, config.row, true], =>
       @ui.on 'input', (e) =>
         @session.request 'vim_input', [e], ->
       @ui.on 'resize', (col, row) =>
