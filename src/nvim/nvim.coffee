@@ -68,7 +68,8 @@ config_handler = (ui) ->
       console.log JSON.stringify(config)
       ui.init_font()
       ui.init_cursor()
-      ui.nv_resize config.col, config.row
+      ui.emit "resize", config.col, config.row
+      ui.emit "input", "<C-l>"
     else
       console.log "samesies"
   , 250
