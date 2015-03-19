@@ -138,6 +138,7 @@ exports.keystrokeForKeyboardEvent = (event) ->
     else
       key = key.toLowerCase() if /^[A-Z]$/.test(key)
     keystroke += 'D-' if event.metaKey
+    key = "lt" if key == "<" and not keystroke.length
     keystroke += key
     if keystroke.length == 1 then keystroke else '<' + keystroke + '>'
 
@@ -169,7 +170,7 @@ keyFromCharCode = (charCode) ->
     when 13 then 'Enter'
     when 27 then 'Esc'
     when 32 then 'Space'
-    when 60 then 'lt'
+    when 60 then '<'
     when 92 then 'Bslash'
     when 124 then 'Bar'
     when 127 then 'Del'
