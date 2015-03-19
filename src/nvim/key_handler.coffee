@@ -170,7 +170,6 @@ keyFromCharCode = (charCode) ->
     when 13 then 'Enter'
     when 27 then 'Esc'
     when 32 then 'Space'
-    when 60 then '<'
     when 92 then 'Bslash'
     when 124 then 'Bar'
     when 127 then 'Del'
