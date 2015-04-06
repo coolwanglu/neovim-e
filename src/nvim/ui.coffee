@@ -32,7 +32,7 @@ class UI extends EventEmitter
     @init_font()
     @init_cursor()
     @init_event_handlers()
-    @nv_resize row, col
+    @nv_resize col, row
 
   init_DOM: ->
     @canvas = document.getElementById 'nvas-canvas'
