@@ -14,7 +14,8 @@ class NVim
 
     # Atom Shell apps are run as 'Atom <path> <args>'
     # might need a better way to locate the arguments
-    nvim_args = ['--embed'].concat remote.process.argv[3..]
+    nvim_args = ['--embed'].concat remote.process.argv[2..]
+
 
     @nvim_process = child_process.spawn 'nvim', nvim_args, stdio: ['pipe', 'pipe', process.stderr]
     console.log 'child process spawned: ' + @nvim_process.pid
