@@ -1,4 +1,4 @@
-<h4>Neovim<sup>e</sup>: Electron UI for Neovim</h4>
+<h1>Neovim<sup>e</sup>: Electron UI for Neovim</h1>
 
 - Install Neovim, Electron, grunt-cli
 - `apm install . && grunt && atom-shell . <nvim arguments>`
