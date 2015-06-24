@@ -18,12 +18,19 @@ class NVim
 
 
     @nvim_process = child_process.spawn 'nvim', nvim_args, stdio: ['pipe', 'pipe', process.stderr]
+    @nvim_running = true
     console.log 'child process spawned: ' + @nvim_process.pid
 
     @nvim_process.on 'close', =>
+      @nvim_running = false
       console.log 'child process closed'
       @session.detach()
       remote.require('app').quit()
+
+    window.onbeforeunload = (e) =>
+      if @nvim_running
+        @session.request 'vim_command', ['qa!'], ->
+        false
 
     @session = new Session
     @session.attach @nvim_process.stdin, @nvim_process.stdout
