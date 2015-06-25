@@ -2,7 +2,7 @@
   "name": "neovim-e",
   "productName": "Neovim-e",
   "version": "0.0.1",
-  "description": "Atom Shell client for Neovim",
+  "description": "Electron client for Neovim",
   "main": "./src/launcher.js",
   "repository": {
     "type": "git",
