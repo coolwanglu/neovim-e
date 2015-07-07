@@ -23,6 +23,38 @@ get_vim_button_name = (button, e) ->
   kn += button + '>'
   kn
 
+# borrowed from underscore@acf826fa42ba6
+debounce = (func, wait, immediate) ->
+  timeout = undefined
+  args = undefined
+  context = undefined
+  timestamp = undefined
+  result = undefined
+
+  later = ->
+    last = Date.now() - timestamp
+    if last < wait and last >= 0
+      timeout = setTimeout(later, wait - last)
+    else
+      timeout = null
+      if !immediate
+        result = func.apply(context, args)
+        if !timeout
+          context = args = null
+    return
+
+  ->
+    context = this
+    args = arguments
+    timestamp = Date.now()
+    callNow = immediate and !timeout
+    if !timeout
+      timeout = setTimeout(later, wait)
+    if callNow
+      result = func.apply(context, args)
+      context = args = null
+    result
+
 # visualize neovim's abstract-ui
 class UI extends EventEmitter
   constructor: (row, col)->
@@ -73,14 +105,28 @@ class UI extends EventEmitter
     @cursor.style.height = @char_height + 'px'
 
     if config.blink_cursor
-      @cursor.classList.add('blink')
+      @start_cursor_blink()
     else
-      @cursor.classList.remove('blink')
+      @stop_cursor_blink()
+
+  start_cursor_blink: ->
+    @cursor.classList.add 'blink'
+
+  stop_cursor_blink: ->
+    @cursor.classList.remove 'blink'
 
   init_event_handlers: ->
+    resumeBlink = debounce (=> @start_cursor_blink()), 250
+    pause_blink = =>
+      @stop_cursor_blink()
+      resumeBlink()
+
     document.addEventListener 'keydown', (e) =>
       keystroke = keystrokeForKeyboardEvent(e)
       @emit 'input', keystroke if keystroke
+
+      if config.blink_cursor
+        pause_blink()
 
     document.addEventListener 'mousedown', (e) =>
       return if not @mouse_enabled
@@ -91,6 +137,9 @@ class UI extends EventEmitter
           + '<' + Math.floor(e.clientX / @char_width) \
           + ',' + Math.floor(e.clientY / @char_height) \
           + '>'
+
+      if config.blink_cursor
+        pause_blink()
 
     document.addEventListener 'mouseup', (e) =>
       return if not @mouse_enabled
@@ -105,6 +154,9 @@ class UI extends EventEmitter
           + '<' + Math.floor(e.clientX / @char_width) \
           + ',' + Math.floor(e.clientY / @char_height) \
           + '>'
+
+      if config.blink_cursor
+        pause_blink()
 
     window.addEventListener 'resize', (e) =>
       if not @resize_timer
@@ -143,6 +195,9 @@ class UI extends EventEmitter
 
       @emit 'input', get_vim_button_name('ScrollWheel' + direction, e) \
         + '<' + cols + ',' + rows + '>'
+
+      if config.blink_cursor
+        pause_blink()
 
   get_color_string: (rgb) ->
     bgr = []
