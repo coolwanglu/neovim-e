@@ -194,7 +194,9 @@ class UI extends EventEmitter
         direction = if rows > 0 then 'Up' else 'Down'
 
       @emit 'input', get_vim_button_name('ScrollWheel' + direction, e) \
-        + '<' + cols + ',' + rows + '>'
+        + '<' + Math.floor(e.clientX / @char_width) \
+        + ',' + Math.floor(e.clientY / @char_height) \
+        + '>'
 
       if config.blink_cursor
         pause_blink()
