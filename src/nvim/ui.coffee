@@ -287,12 +287,11 @@ class UI extends EventEmitter
     if attrs.foreground? then @attrs.fg_color = @get_color_string(attrs.foreground)
     if attrs.background? then @attrs.bg_color = @get_color_string(attrs.background)
 
-  nv_insert_mode: -> document.body.className = 'insert-mode'
 
   nv_mouse_off: -> @mouse_enabled = false
   nv_mouse_on: -> @mouse_enabled = true
 
-  nv_normal_mode: -> document.body.className = 'normal-mode'
+  nv_mode_change: (mode) -> document.body.className = "#{mode}-mode"
 
   nv_put: (chars) ->
     return if chars.length == 0
