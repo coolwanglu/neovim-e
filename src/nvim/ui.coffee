@@ -59,6 +59,11 @@ debounce = (func, wait, immediate) ->
 class UI extends EventEmitter
   constructor: (row, col)->
     super()
+    @ww = 800
+    @wh = 600
+    # resize [original, increase, increase, decrease, decrease] keys mapping
+    @resize_keys = ["<D-0>", "<D-=>", "<D-+>", "<D-->", "<D-_>"]
+    @orig_fontsize = parseInt(config.font.match(/(\d+)px/)[1])
     @init_DOM()
     @init_state()
     @init_font()
@@ -123,6 +128,30 @@ class UI extends EventEmitter
 
     document.addEventListener 'keydown', (e) =>
       keystroke = keystrokeForKeyboardEvent(e)
+
+      resize_flag = keystroke.startsWith("<D-") and @resize_keys.indexOf(keystroke)
+      if resize_flag isnt false and resize_flag isnt -1
+        fontsize = parseInt config.font.match(/(\d+)px/)[1]
+        if resize_flag is 0
+          fontsize = @orig_fontsize
+          @ww = 800
+          @wh = 600
+        else if 0 < resize_flag <= 2
+          fontsize = fontsize + 1
+          @ww = @ww + fontsize * 2.2
+          @wh = @wh + fontsize * 1.1
+        else if resize_flag > 2
+          fontsize = fontsize - 1
+          @ww = @ww - fontsize * 2.2
+          @wh = @wh - fontsize * 1.1
+        # change config.font settings and force window-resize to redraw frames
+        config.font = config.font.replace /(\d+px)/, fontsize.toString() + "px"
+        window.resizeTo(@ww, @wh)
+        @init_font()
+        @init_cursor()
+
+        null
+
       @emit 'input', keystroke if keystroke
 
       if config.blink_cursor
