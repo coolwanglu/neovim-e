@@ -2,9 +2,8 @@
 # handle redraw events from neovim
 # Copyright (c) 2015 Lu Wang <coolwanglu@gmail.com>
 
-shell = require 'shell'
+{shell, remote} = require 'electron'
 EventEmitter = require('events').EventEmitter
-remote = require 'remote'
 config = require './config'
 {keystrokeForKeyboardEvent} = require './key_handler'
 

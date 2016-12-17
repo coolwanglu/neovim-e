@@ -2,8 +2,7 @@
 # entry point of the app
 # Copyright (c) 2015 Lu Wang <coolwanglu@gmail.com>
 
-app = require 'app'
-BrowserWindow = require 'browser-window'
+{app, BrowserWindow} = require 'electron'
 
 process.on 'uncaughtException', (error={}) ->
   console.log error.message  if error.message?
@@ -14,4 +13,5 @@ app.on 'window-all-closed', -> app.quit()
 win = null
 app.on 'ready', ->
   win = new BrowserWindow width: 800, height: 600
-  win.loadUrl 'file://' + __dirname + '/nvim.html'
+  win.loadURL 'file://' + __dirname + '/nvim.html'
+  win.toggleDevTools()
