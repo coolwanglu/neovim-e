@@ -25,7 +25,7 @@ class NVim
       @nvim_running = false
       console.log 'child process closed'
       @session.detach()
-      require('electron').app.quit()
+      remote.app.quit()
 
     window.onbeforeunload = (e) =>
       if @nvim_running
