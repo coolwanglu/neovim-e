@@ -6,7 +6,7 @@ window.onload = ->
   try
     window.nvim = new (require('./nvim/nvim'))()
   catch error
-    win = require('remote').getCurrentWindow()
+    win = require('electron').remote.getCurrentWindow()
     win.setSize 800, 600
     win.center()
     win.show()

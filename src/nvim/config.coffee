@@ -2,10 +2,10 @@
 # user configs
 # Copyright (c) 2015 Lu Wang <coolwanglu@gmail.com>
 
-remote = require 'remote'
+{remote} = require 'electron'
 path = require 'path'
 cson = require 'cson'
-app = remote.require 'app'
+{remote: {app}} = require 'electron'
 
 # default
 config =

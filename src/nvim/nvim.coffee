@@ -4,7 +4,7 @@
 
 child_process = require 'child_process'
 Session = require 'msgpack5rpc'
-remote = require 'remote'
+{remote} = require 'electron'
 UI = require './ui'
 config = require './config'
 
@@ -25,7 +25,7 @@ class NVim
       @nvim_running = false
       console.log 'child process closed'
       @session.detach()
-      remote.require('app').quit()
+      remote.app.quit()
 
     window.onbeforeunload = (e) =>
       if @nvim_running
